@@ -36,7 +36,7 @@ import csv
 import time
 import os
 
-data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/'
+data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/'+ '/singapur_bus_routes/'
 
 
 """
@@ -137,6 +137,7 @@ def total_stops(analyzer):
     Total de paradas de autobus en el grafo
     """
     # TODO: Retorne el número de vértices del grafo
+    return G.order(analyzer['connections'])
 
 
 def total_connections(analyzer):
@@ -144,6 +145,7 @@ def total_connections(analyzer):
     Total de enlaces entre las paradas
     """
     # TODO: Retorne el número de arcos del grafo de conexiones
+    return G.size(analyzer['connections'])
 
 
 # Funciones para la medición de tiempos
