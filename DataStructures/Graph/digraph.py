@@ -1,6 +1,8 @@
 from DataStructures.Map import map_linear_probing as mlp
 from DataStructures.Graph import vertex as vt
 from DataStructures.Graph import edge as edg
+from DataStructures.List import array_list as al
+
 
 def new_graph(order):
     map_order = max(order, 1)
@@ -63,3 +65,19 @@ def adjacents(my_graph, key_u):
 
 def get_vertex(my_graph, key_u):
     return mlp.get_element(my_graph["vertices"], key_u)
+
+
+def edges_vertex(my_graph, vertex):
+    key = vt.get_key(vertex)
+    vertex_u = mlp.get(my_graph["vertices"], key)
+    if vertex_u is None:
+        return al.new_list()
+    mapa = vt.get_adjacents(vertex_u)
+    return adjacents(mapa, key)
+
+def update_vertex_info(my_graph, key_u, new_info_u):
+    vertex_u = mlp.get(my_graph["vertices"], key_u)
+    if vertex_u is None:
+        raise KeyError(f"Vertice con llave {key_u} no existe.")
+    
+    return my_graph
