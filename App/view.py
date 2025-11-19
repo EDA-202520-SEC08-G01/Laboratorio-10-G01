@@ -75,6 +75,8 @@ def option_one(cont):
 
 def option_two(cont):
     # TODO: Imprimir los resultados de la opción 2
+    y = logic.get_most_concurrent_stops(cont)
+    print(y)
     ...
 
 def option_three(cont):

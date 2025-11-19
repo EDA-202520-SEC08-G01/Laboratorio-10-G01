@@ -28,15 +28,18 @@
 #  Importaciones
 # ___________________________________________________
 
+from DataStructures.List import array_list as al
 from DataStructures.List import single_linked_list as lt
 from DataStructures.Map import map_linear_probing as m
 from DataStructures.Graph import digraph as G
+from DataStructures.Graph import vertex as v
+from DataStructures.Graph import edge as e
 
 import csv
 import time
 import os
 
-data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/'
+data_dir = os.path.dirname(os.path.realpath('__file__')) + '/Data/'+ '/singapur_bus_routes/'
 
 
 """
@@ -137,6 +140,7 @@ def total_stops(analyzer):
     Total de paradas de autobus en el grafo
     """
     # TODO: Retorne el número de vértices del grafo
+    return G.order(analyzer['connections'])
 
 
 def total_connections(analyzer):
@@ -144,6 +148,7 @@ def total_connections(analyzer):
     Total de enlaces entre las paradas
     """
     # TODO: Retorne el número de arcos del grafo de conexiones
+    return G.size(analyzer['connections'])
 
 
 # Funciones para la medición de tiempos
@@ -247,12 +252,30 @@ def add_same_stop_connections(analyzer, service):
 #  Funciones de resolución de requerimientos
 # ___________________________________________________
 
+def default_cmp(key1, key2):
+    if key1[0] > key2[0]:
+        return 1
+    elif key1[0] < key2[0]:
+        return -1
+    else:
+        return -0
+    
 def get_most_concurrent_stops(analyzer):
     """
     Obtiene las 5 paradas más concurridas
     """
+    connections = analyzer["connections"]
     # TODO: Obtener las 5 paradas más concurridas, es decir, con más arcos salientes
-    ...
+    res = al.new_list()
+    con = connections["vertices"]["table"]["elements"]
+    for i in con:
+        if v.get_key(i) is not None:
+            deg = G.degree(connections, v.get_key(i))
+            al.add_last(res, [deg,i])
+    y = al.merge_sort(res, default_cmp)
+    return al.sub_list(y, 0, 5)
+    
+
 
 def get_route_between_stops_dfs(analyzer, stop1, stop2):
     """

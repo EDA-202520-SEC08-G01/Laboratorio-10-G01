@@ -239,3 +239,10 @@ def quick_sort(list, sort_crit):
     # Se concatenan las 3 particiones y se retorna la lista ordenada: antes -> iguales -> después
     return concatenar(concatenar(antes_pivote_sort, iguales), dsps_pivote_sort)
 
+def default_function(element_1, element_2):
+    if element_1 > element_2:
+        return 1
+    elif element_1 < element_2:
+        return -1
+    else:
+        return 0
