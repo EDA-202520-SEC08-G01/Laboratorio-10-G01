@@ -53,3 +53,13 @@ def degree(my_graph, key_u):
         raise KeyError(f"Vertice con llave {key_u} no existe.")
     mapa_arcos = vt.get_adjacents(vertex_u)
     return mlp.size(mapa_arcos)
+
+def adjacents(my_graph, key_u):
+    vertex_u = mlp.get(my_graph["vertices"], key_u)
+    if vertex_u is None:
+        raise KeyError(f"Vertice con llave {key_u} no existe.")
+    mapa_arcos = vt.get_adjacents(vertex_u)
+    return mlp.key_set(mapa_arcos)
+
+def get_vertex(my_graph, key_u):
+    return mlp.get_element(my_graph["vertices"], key_u)
