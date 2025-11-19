@@ -1,12 +1,12 @@
-from DataStructures.Priority_queue import Priority_queue as pq
+from DataStructures.Priority_queue import priority_queue as pq
 from DataStructures.Map import map_linear_probing as mlp
-import vertex as vtx
+from DataStructures.Graph import vertex as vtx
 
 
 def new_graph(order):
     
     return {
-        "vertices": mlp.new_map(order),
+        "vertices": mlp.new_map(order, 0.75, prime=109345121),
         "num_edges": 0,
         
     }
@@ -14,4 +14,5 @@ def new_graph(order):
 def insert_vertex(my_graph, key_u, info_u):
     vertice = vtx.new_vertex(key_u, info_u)
     mlp.put(my_graph["vertices"], key_u, vertice)
+    return my_graph
     
