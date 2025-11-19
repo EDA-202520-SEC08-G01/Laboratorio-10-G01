@@ -28,7 +28,7 @@
 import sys
 import threading
 from App import logic
-
+from DataStructures.List import array_list as al
 """
 La vista se encarga de la interacción con el usuario.
 Presenta el menu de opciones  y  por cada seleccion
@@ -76,7 +76,23 @@ def option_one(cont):
 def option_two(cont):
     # TODO: Imprimir los resultados de la opción 2
     y = logic.get_most_concurrent_stops(cont)
-    print(y)
+
+    if al.size(y) == 0:
+        print("No hay información de paradas en el analizador.")
+        return
+
+    # Encabezado bonito
+    print("{:<4} {:<20} {:>10}".format("No.", "Parada (id)", "Conexiones"))
+    print("-" * 40)
+
+    # Recorrer la lista (array_list) con tuplas (stop_id, degree)
+    for i in range(al.size(y)):
+        stop_id, degree = al.get_element(y, i)
+        print("{:<4} {:<20} {:>10}".format(i + 1, stop_id, degree))
+
+    print("-" * 40)
+    print("Total paradas listadas:", al.size(y))
+    print()
     ...
 
 def option_three(cont):
