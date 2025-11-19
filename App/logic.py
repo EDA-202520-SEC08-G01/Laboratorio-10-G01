@@ -28,12 +28,10 @@
 #  Importaciones
 # ___________________________________________________
 
-from DataStructures.List import array_list as al
 from DataStructures.List import single_linked_list as lt
+from DataStructures.List import array_list as al
 from DataStructures.Map import map_linear_probing as m
 from DataStructures.Graph import digraph as G
-from DataStructures.Graph import vertex as v
-from DataStructures.Graph import edge as e
 
 import csv
 import time
@@ -252,30 +250,35 @@ def add_same_stop_connections(analyzer, service):
 #  Funciones de resolución de requerimientos
 # ___________________________________________________
 
-def default_cmp(key1, key2):
-    if key1[0] > key2[0]:
-        return 1
-    elif key1[0] < key2[0]:
-        return -1
-    else:
-        return -0
-    
 def get_most_concurrent_stops(analyzer):
     """
     Obtiene las 5 paradas más concurridas
     """
-    connections = analyzer["connections"]
     # TODO: Obtener las 5 paradas más concurridas, es decir, con más arcos salientes
-    res = al.new_list()
-    con = connections["vertices"]["table"]["elements"]
-    for i in con:
-        if v.get_key(i) is not None:
-            deg = G.degree(connections, v.get_key(i))
-            al.add_last(res, [deg,i])
-    y = al.merge_sort(res, default_cmp)
-    return al.sub_list(y, 0, 5)
-    
+    connections = analyzer["connections"]
 
+    stops_with_degree = al.new_list()
+
+    vertices_keys = G.vertices(connections)
+
+    num_vertices = al.size(vertices_keys)
+    for i in range(num_vertices):
+        key = al.get_element(vertices_keys, i)
+        deg = G.degree(connections, key)   
+        al.add_last(stops_with_degree, (key, deg))
+
+    def sort_criteria(t1, t2):
+        return t1[1] > t2[1]
+
+    sorted_stops = al.merge_sort(stops_with_degree, sort_criteria)
+
+    top_5 = al.new_list()
+    limit = min(5, al.size(sorted_stops))
+    for i in range(limit):
+        al.add_last(top_5, al.get_element(sorted_stops, i))
+
+    return top_5
+    ...
 
 def get_route_between_stops_dfs(analyzer, stop1, stop2):
     """
