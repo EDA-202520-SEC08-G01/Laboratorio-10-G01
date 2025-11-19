@@ -66,7 +66,6 @@ def adjacents(my_graph, key_u):
 def get_vertex(my_graph, key_u):
     return mlp.get_element(my_graph["vertices"], key_u)
 
-
 def edges_vertex(my_graph, vertex):
     key = vt.get_key(vertex)
     vertex_u = mlp.get(my_graph["vertices"], key)
@@ -78,6 +77,14 @@ def edges_vertex(my_graph, vertex):
 def update_vertex_info(my_graph, key_u, new_info_u):
     vertex_u = mlp.get(my_graph["vertices"], key_u)
     if vertex_u is None:
-        raise KeyError(f"Vertice con llave {key_u} no existe.")
-    
+        raise my_graph
+    old_info = mlp.get_element(my_graph["vertices"], key_u)
+    old_info["value"] = new_info_u
     return my_graph
+
+def get_vertex_info(my_graph, key_u):
+    vertex_u = mlp.get(my_graph["vertices"], key_u)
+    if vertex_u is None:
+        raise my_graph
+    return vt.get_value(vertex_u)
+
