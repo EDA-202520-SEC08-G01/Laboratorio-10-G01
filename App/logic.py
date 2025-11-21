@@ -33,6 +33,7 @@ from DataStructures.List import array_list as al
 from DataStructures.Map import map_linear_probing as m
 from DataStructures.Graph import digraph as G
 from DataStructures.Graph import dfs as dfs
+from DataStructures.Graph import bfs as bfs
 from DataStructures.Stack import stack as st
 
 import csv
@@ -380,12 +381,80 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
     ...
 
 def get_route_between_stops_bfs(analyzer, stop1, stop2):
-    """
-    Obtener la ruta entre dos parada usando bfs
-    """
-    # TODO: Obtener la ruta entre dos parada usando bfs
-    ...
+    
+    graph = analyzer["connections"]
+    search = bfs.bfs(graph, stop1)
 
+    if not bfs.has_path_to(search, stop2):
+        return None
+
+    path = bfs.path_to(stop2, search)
+    if path is None or st.is_empty(path):
+        return None
+    
+    stops_list = al.new_list()
+    temp_stack = st.new_stack()
+
+    while not st.is_empty(path):
+        stop = st.pop(path)
+        al.add_last(stops_list, stop)
+        st.push(temp_stack, stop)
+
+    while not st.is_empty(temp_stack):
+        st.push(path, st.pop(temp_stack))
+
+    segments = al.new_list()
+    total = al.size(stops_list)
+
+    if total >= 2:
+        current_segment = {
+            "bus_route": None,
+            "start_stop": al.get_element(stops_list, 0),
+            "stops": al.new_list(),
+            "is_transfer": False
+        }
+
+        al.add_last(current_segment["stops"], current_segment["start_stop"])
+
+        for i in range(total - 1):
+            current_stop = al.get_element(stops_list, i)
+            next_stop = al.get_element(stops_list, i + 1)
+            edge = G.get_edge(graph, current_stop, next_stop)
+
+            if edge is not None:
+                route_info = str(edge.get("weight", "Unknown"))
+                
+                if current_segment["bus_route"] is None:
+                    current_segment["bus_route"] = route_info
+
+                elif current_segment["bus_route"] != route_info:
+                    current_segment["end_stop"] = current_stop
+                    al.add_last(segments, current_segment)
+                    
+                    current_segment = {
+                        "bus_route": route_info,
+                        "start_stop": current_stop,
+                        "stops": al.new_list(),
+                        "is_transfer": True
+                    }
+                    al.add_last(current_segment["stops"], current_stop)
+
+            al.add_last(current_segment["stops"], next_stop)
+
+        current_segment["end_stop"] = al.get_element(stops_list, total - 1)
+        al.add_last(segments, current_segment)
+
+    result = {
+        "search": search,
+        "path": path,
+        "total_stops": al.size(stops_list),
+        "stops_list": stops_list,
+        "segments": segments,
+        "source": stop1,
+        "destination": stop2
+    }
+
+    return result
 def get_shortest_route_between_stops(analyzer, stop1, stop2):
     """
     Obtener la ruta mínima entre dos paradas
