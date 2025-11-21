@@ -5,23 +5,33 @@ from DataStructures.Priority_queue import priority_queue as pq
 from DataStructures.Queue import queue as q
 
 def bfs(my_graph, source):
-    
+    """
+    Inicializa la estructura de búsqueda BFS
+    y llama a bfs_vertex.
+    """
+
     visited_map = mlp.new_map(
         num_elements=dg.order(my_graph),
         load_factor=0.5
     )
-    
+
     mlp.put(visited_map, source, {
         "edge_from": None,
-        "dist_to": 0
+        "dist_to": 0,
+        "marked": True    
     })
 
     visited_map = bfs_vertex(my_graph, source, visited_map)
 
     return visited_map
 
+
+
 def bfs_vertex(my_graph, source, visited_map):
-    
+    """
+    Recorrido BFS desde 'source'
+    """
+
     cola = q.new_queue()
     q.enqueue(cola, source)
 
@@ -36,11 +46,11 @@ def bfs_vertex(my_graph, source, visited_map):
 
             if not mlp.contains(visited_map, v):
                 info_u = mlp.get(visited_map, u)
-                dist_v = info_u["dist_to"] + 1
 
                 mlp.put(visited_map, v, {
                     "edge_from": u,
-                    "dist_to": dist_v
+                    "dist_to": info_u["dist_to"] + 1,
+                    "marked": True     
                 })
                 q.enqueue(cola, v)
 
