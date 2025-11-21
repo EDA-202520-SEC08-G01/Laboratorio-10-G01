@@ -32,6 +32,8 @@ from DataStructures.List import single_linked_list as lt
 from DataStructures.List import array_list as al
 from DataStructures.Map import map_linear_probing as m
 from DataStructures.Graph import digraph as G
+from DataStructures.Graph import dfs as dfs
+from DataStructures.Stack import stack as st
 
 import csv
 import time
@@ -285,6 +287,96 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
     Obtener la ruta entre dos parada usando dfs
     """
     # TODO: Obtener la ruta entre dos parada usando dfs
+    graph = analyzer['connections']
+    
+    # Ejecutar DFS desde la parada inicial
+    search = dfs.dfs(graph, stop1)
+    
+    # Verificar si existe camino a la parada destino
+    if not dfs.has_path_to(stop2, search):
+        return None
+    
+    # Obtener el camino como pila
+    path = dfs.path_to(stop2, search)
+    
+    if path is None or st.is_empty(path):
+        return None
+    
+    # Convertir la pila a lista
+    stops_list = []
+    temp_stack = st.new_stack()
+    
+    while not st.is_empty(path):
+        stop = st.pop(path)
+        stops_list.append(stop)
+        st.push(temp_stack, stop)
+    
+    # Restaurar la pila original
+    while not st.is_empty(temp_stack):
+        stop = st.pop(temp_stack)
+        st.push(path, stop)
+    
+    # Analizar segmentos y detectar transbordos
+    segments = []
+    if len(stops_list) >= 2:
+        current_segment = {
+            'bus_route': None,
+            'start_stop': stops_list[0],
+            'stops': [stops_list[0]],
+            'is_transfer': False
+        }
+        
+        # Recorrer las paradas consecutivas
+        for i in range(len(stops_list) - 1):
+            current_stop = stops_list[i]
+            next_stop = stops_list[i + 1]
+            
+            # Obtener la información del arco entre las paradas
+            edge = G.get_edge(graph, current_stop, next_stop)
+            
+            if edge is not None:
+                # Obtener el ID de la ruta del arco
+                # AJUSTA SEGÚN TU ESTRUCTURA:
+                # Opción 1: Si el peso es el ID de ruta
+                route_info = str(edge.get('weight', 'Unknown'))
+                
+                # Opción 2: Si tienes otra estructura, ajusta aquí:
+                # route_info = analyzer['connections'].get((current_stop, next_stop), 'Unknown')
+                
+                # Si es la primera parada o cambia la ruta, hay transbordo
+                if current_segment['bus_route'] is None:
+                    current_segment['bus_route'] = route_info
+                elif current_segment['bus_route'] != route_info:
+                    # Terminar el segmento actual
+                    current_segment['end_stop'] = current_stop
+                    segments.append(current_segment)
+                    
+                    # Iniciar nuevo segmento con transbordo
+                    current_segment = {
+                        'bus_route': route_info,
+                        'start_stop': current_stop,
+                        'stops': [current_stop],
+                        'is_transfer': True
+                    }
+            
+            current_segment['stops'].append(next_stop)
+        
+        # Agregar el último segmento
+        current_segment['end_stop'] = stops_list[-1]
+        segments.append(current_segment)
+    
+    # Preparar y retornar el resultado
+    result = {
+        'search': search,
+        'path': path,
+        'total_stops': len(stops_list),
+        'stops_list': stops_list,
+        'segments': segments,
+        'source': stop1,
+        'destination': stop2
+    }
+    
+    return result
     ...
 
 def get_route_between_stops_bfs(analyzer, stop1, stop2):

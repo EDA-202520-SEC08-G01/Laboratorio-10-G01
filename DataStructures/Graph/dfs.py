@@ -27,11 +27,11 @@ def dfs(my_graph, source):
     }
 
     # Inicializar visitados y padres
-    verts = dg.vertices(my_graph)
-    for i in range(al.size(verts)):
-        v = al.get_element(verts, i)
-        mlp.put(search["visited"], v, False)
-        mlp.put(search["parent"], v, None)
+    #verts = dg.vertices(my_graph)
+    #for i in range(al.size(verts)):
+    #    v = al.get_element(verts, i)
+    #    mlp.put(search["visited"], v, False)
+    #    mlp.put(search["parent"], v, None)
 
     dfs_vertex(my_graph, source, search)
 
@@ -45,16 +45,31 @@ def dfs_vertex(my_graph, vertex, search):
     """
     mlp.put(search["visited"], vertex, True)
     al.add_last(search["pre"], vertex)
-    vertex_obj = dg.get_vertex(my_graph, vertex)
-    adj_map = vtx.get_adjacents(vertex_obj)
-    adj_keys = mlp.key_set(adj_map)
 
-    for i in range(al.size(adj_keys)):
-        w = al.get_element(adj_keys, i)
-        if not mlp.get(search["visited"], w):
-            # Registrar el padre de w
-            mlp.put(search["parent"], w, vertex)
-            dfs_vertex(my_graph, w, search)
+    # Obtener los vértices adyacentes usando la función adjacents del grafo
+    adj_list = dg.adjacents(my_graph, vertex)
+    
+    # Obtener el tamaño de la lista una sola vez
+    adj_size = al.size(adj_list)
+    
+    # Recorrer los adyacentes usando las funciones de array_list
+    for i in range(adj_size):
+        w = al.get_element(adj_list, i)
+        
+        # Verificar si w ya fue visitado
+        # Primero verificar si existe en el mapa
+        if mlp.contains(search["visited"], w):
+            # Si existe, obtener su valor
+            is_visited = mlp.get(search["visited"], w)
+            # Si es True, ya fue visitado, continuar con el siguiente
+            if is_visited is True or is_visited == True:
+                continue
+        
+        # Si llegamos aquí, w no ha sido visitado
+        # Registrar el padre de w
+        mlp.put(search["parent"], w, vertex)
+        # Hacer llamada recursiva
+        dfs_vertex(my_graph, w, search)
 
     al.add_last(search["post"], vertex)
     st.push(search["reversepost"], vertex)
