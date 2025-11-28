@@ -87,7 +87,7 @@ def sink(my_heap, pos):
         if right_child_pos <= size:
             right_child_element = al.get_element(my_heap["elements"], right_child_pos)
 
-            if priority(my_heap, left_child_element, right_child_element):
+            if priority(my_heap, right_child_element, left_child_element):
                 selected_child_pos = right_child_pos
                 selected_child_element = right_child_element
             else:
