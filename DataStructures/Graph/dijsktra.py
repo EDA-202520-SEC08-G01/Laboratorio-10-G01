@@ -14,7 +14,7 @@ def dijsktra(my_graph, source):
 
     vertices = dg.vertices(my_graph)
 
-    for v in vertices:
+    for v in vertices["elements"]:
         mlp.put(visited, v, {
             "marked": False,
             "edge_from": None,
@@ -22,6 +22,8 @@ def dijsktra(my_graph, source):
         })
 
     src_info = mlp.get(visited, source)
+    if src_info is None:
+        raise KeyError(f"El vertice con llave {source} no existe en el grafo.")
     src_info["dist_to"] = 0
 
     pq.insert(heap, 0, source)
@@ -40,7 +42,7 @@ def dijsktra(my_graph, source):
         # Obtener vecinos
         neighbors = dg.adjacents(my_graph, v)
 
-        for w in neighbors:
+        for w in neighbors["elements"]:
 
             edge = dg.get_edge(my_graph, v, w)
             weight = edge["weight"]

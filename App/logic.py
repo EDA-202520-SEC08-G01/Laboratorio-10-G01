@@ -485,8 +485,19 @@ def get_shortest_route_between_stops(analyzer, stop1, stop2):
     # Nota: Tenga en cuenta que el debe guardar en la llave
     #       analyzer['paths'] el resultado del algoritmo de Dijkstra
     graph = analyzer["connections"]
-    result = dijkstra(graph, stop1, stop2)
-    return result
+    result = dijkstra.dijsktra(graph, stop1)
+    analyzer["paths"] = result
+    visitado = result["visited"]
+    dest_info = m.get(visitado, stop2)
+    if dest_info is None or dest_info["marked"] is False:
+        return None
+    ruta = al.new_list()
+    parada = stop2
+    while parada is not None:
+        al.add_last(ruta, parada)
+        info_parada = m.get(visitado, parada)
+        parada = info_parada["edge_from"]
+    return ruta
 
 def show_calculated_shortest_route(analyzer, destination_stop):
     # (Opcional) TODO: Mostrar en un mapa la ruta mínima entre dos paradas usando folium

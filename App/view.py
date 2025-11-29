@@ -189,6 +189,11 @@ def option_four(cont):
     
 def option_five(cont):
     # TODO: Imprimir los resultados de la opción 5
+    stop1 = input("Parada inicial: ").strip().strip("'\"")
+    stop2 = input("Parada destino: ").strip().strip("'\"")
+    res = logic.get_shortest_route_between_stops(cont, stop1, stop2)
+    return print(res)
+
     ...
 
 def option_six(cont):
