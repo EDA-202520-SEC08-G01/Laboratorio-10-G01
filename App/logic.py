@@ -499,7 +499,7 @@ def get_shortest_route_between_stops(analyzer, stop1, stop2):
     ruta = al.new_list()
     parada = stop2
     while parada is not None:
-        al.add_last(ruta, parada)
+        al.add_first(ruta, parada)
         info_parada = m.get(visitado, parada)
         parada = info_parada["edge_from"]
     return ruta

@@ -186,16 +186,17 @@ def option_five(cont):
         print(f"No se encontró ruta entre '{stop1}' y '{stop2}'")
         return
     path = res["elements"]
+    last_stop = al.get_element(res, 0)
     print(f"Ruta: (Empieza desde {stop1})")
-    first = al.get_element(res, 0)
-    first_stop, current_bus = first.split("-")
     for i in range(len(path) - 1):
-        if current_bus == first:
+        first = al.get_element(res, i)
+        first_stop, current_bus = first.split("-")
+        if current_bus == last_stop:
             print(f"  {path[i]} -> {path[i + 1]}")
         else:
             print(f"Cambiar a bus '{current_bus}' en la parada '{path[i]}'")
             print(f"  {path[i]} -> {path[i + 1]}")
-            first = current_bus
+            last_stop = current_bus
 
 
 
