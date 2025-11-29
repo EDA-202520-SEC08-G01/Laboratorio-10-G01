@@ -1,4 +1,4 @@
-import digraph as dg
+from DataStructures.Graph import digraph as dg
 from DataStructures.Map import map_linear_probing as mlp
 from DataStructures.Stack import stack as st
 from DataStructures.Priority_queue import priority_queue as pq

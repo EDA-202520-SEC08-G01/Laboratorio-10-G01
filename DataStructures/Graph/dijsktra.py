@@ -1,7 +1,7 @@
-import dijsktra_structure as ds
+from DataStructures.Graph import dijsktra_structure as ds
 from DataStructures.Map import map_linear_probing as mlp
 from DataStructures.Priority_queue import priority_queue as pq
-import digraph as dg
+from DataStructures.Graph import digraph as dg
 from DataStructures.List import stack as st
 import math
 
