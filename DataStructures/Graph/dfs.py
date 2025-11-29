@@ -10,6 +10,8 @@ from DataStructures.Stack import stack as st
 from DataStructures.Graph import digraph as dg
 from DataStructures.Graph import vertex as vtx
 
+import sys
+sys.setrecursionlimit(100000)
 
 def dfs(my_graph, source):
     """
@@ -19,11 +21,11 @@ def dfs(my_graph, source):
     """
 
     search = {
-        "visited": mlp.new_map(100, 0.75),
+        "visited": mlp.new_map(1000, 0.75),
         "pre": al.new_list(),
         "post": al.new_list(),
         "reversepost": st.new_stack(),
-        "parent": mlp.new_map(100, 0.75)
+        "parent": mlp.new_map(1000, 0.75)
     }
 
     # Inicializar visitados y padres

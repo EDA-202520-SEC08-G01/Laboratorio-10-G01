@@ -310,96 +310,129 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
     Obtener la ruta entre dos parada usando dfs
     """
     # TODO: Obtener la ruta entre dos parada usando dfs
-    graph = analyzer['connections']
-    
-    # Ejecutar DFS desde la parada inicial
-    search = dfs.dfs(graph, stop1)
-    
-    # Verificar si existe camino a la parada destino
-    if not dfs.has_path_to(stop2, search):
+    graph = analyzer["connections"]
+
+    # Verificar que existan ambos vértices
+    if not G.contains_vertex(graph, stop1) or not G.contains_vertex(graph, stop2):
         return None
-    
-    # Obtener el camino como pila
-    path = dfs.path_to(stop2, search)
-    
-    if path is None or st.is_empty(path):
+
+    # Helper: separar '66009-100' en ('66009', '100')
+    def split_vertex(v):
+        parts = v.split('-')
+        return parts[0], parts[1]
+
+    _, origin_route = split_vertex(stop1)
+    _, dest_route = split_vertex(stop2)
+
+    # -------- DFS con estado "ya hice transbordo o no" --------
+    # Estado: (vertex_id, changed) donde changed = False/True si ya cambié de ruta
+    start_state = (stop1, False)
+
+    stack_dfs = st.new_stack()
+    st.push(stack_dfs, start_state)
+
+    visited = set()
+    visited.add(start_state)
+
+    parent = {}  # parent[(vertex, changed)] = (prev_vertex, prev_changed)
+
+    found_state = None
+
+    while not st.is_empty(stack_dfs):
+        current_vertex, changed = st.pop(stack_dfs)
+
+        if current_vertex == stop2:
+            found_state = (current_vertex, changed)
+            break
+
+        # Vecinos del vértice actual
+        neighbors = G.adjacents(graph, current_vertex)
+        nsize = al.size(neighbors)
+
+        for i in range(nsize):
+            nb = al.get_element(neighbors, i)
+            _, nb_route = split_vertex(nb)
+
+            # Lógica de a lo sumo un transbordo:
+            if not changed:
+                # Todavía estamos en la ruta origen; podemos:
+                # - seguir en la ruta origen
+                # - o cambiar a la ruta destino
+                if nb_route == origin_route:
+                    new_changed = False
+                elif nb_route == dest_route:
+                    new_changed = True
+                else:
+                    continue  # ignorar otras rutas
+            else:
+                # Ya hicimos transbordo; solo seguimos por la ruta destino
+                if nb_route != dest_route:
+                    continue
+                new_changed = True
+
+            new_state = (nb, new_changed)
+            if new_state not in visited:
+                visited.add(new_state)
+                parent[new_state] = (current_vertex, changed)
+                st.push(stack_dfs, new_state)
+
+    # Si nunca llegamos al destino con estas restricciones
+    if found_state is None:
         return None
-    
-    # Convertir la pila a lista
-    stops_list = []
-    temp_stack = st.new_stack()
-    
-    while not st.is_empty(path):
-        stop = st.pop(path)
-        stops_list.append(stop)
-        st.push(temp_stack, stop)
-    
-    # Restaurar la pila original
-    while not st.is_empty(temp_stack):
-        stop = st.pop(temp_stack)
-        st.push(path, stop)
-    
-    # Analizar segmentos y detectar transbordos
+
+    # -------- Reconstruir camino de stop1 a stop2 --------
+    path_vertices = []
+    state = found_state
+    while True:
+        v, ch = state
+        path_vertices.append(v)
+        if state == start_state:
+            break
+        state = parent[state]
+
+    path_vertices.reverse()  # ahora va de origen -> destino
+
+    # -------- Construir segmentos por bus --------
     segments = []
-    if len(stops_list) >= 2:
-        current_segment = {
-            'bus_route': None,
-            'start_stop': stops_list[0],
-            'stops': [stops_list[0]],
-            'is_transfer': False
-        }
-        
-        # Recorrer las paradas consecutivas
-        for i in range(len(stops_list) - 1):
-            current_stop = stops_list[i]
-            next_stop = stops_list[i + 1]
-            
-            # Obtener la información del arco entre las paradas
-            edge = G.get_edge(graph, current_stop, next_stop)
-            
-            if edge is not None:
-                # Obtener el ID de la ruta del arco
-                # AJUSTA SEGÚN TU ESTRUCTURA:
-                # Opción 1: Si el peso es el ID de ruta
-                route_info = str(edge.get('weight', 'Unknown'))
-                
-                # Opción 2: Si tienes otra estructura, ajusta aquí:
-                # route_info = analyzer['connections'].get((current_stop, next_stop), 'Unknown')
-                
-                # Si es la primera parada o cambia la ruta, hay transbordo
-                if current_segment['bus_route'] is None:
-                    current_segment['bus_route'] = route_info
-                elif current_segment['bus_route'] != route_info:
-                    # Terminar el segmento actual
-                    current_segment['end_stop'] = current_stop
-                    segments.append(current_segment)
-                    
-                    # Iniciar nuevo segmento con transbordo
-                    current_segment = {
-                        'bus_route': route_info,
-                        'start_stop': current_stop,
-                        'stops': [current_stop],
-                        'is_transfer': True
-                    }
-            
-            current_segment['stops'].append(next_stop)
-        
-        # Agregar el último segmento
-        current_segment['end_stop'] = stops_list[-1]
-        segments.append(current_segment)
-    
-    # Preparar y retornar el resultado
-    result = {
-        'search': search,
-        'path': path,
-        'total_stops': len(stops_list),
-        'stops_list': stops_list,
-        'segments': segments,
-        'source': stop1,
-        'destination': stop2
-    }
-    
-    return result
+    current_route = None
+    current_stops = []
+    start_stop_code = None
+
+    for v in path_vertices:
+        stop_code, route = split_vertex(v)
+
+        if current_route is None:
+            # Primer vértice
+            current_route = route
+            start_stop_code = stop_code
+            current_stops = [stop_code]
+        elif route == current_route:
+            # Seguimos en el mismo bus
+            if not current_stops or stop_code != current_stops[-1]:
+                current_stops.append(stop_code)
+        else:
+            # Cambio de bus -> cerramos segmento anterior
+            if len(current_stops) > 0:
+                segments.append({
+                    "bus_route": current_route,
+                    "start_stop": start_stop_code,
+                    "stops": current_stops
+                })
+            # Nuevo segmento
+            current_route = route
+            start_stop_code = stop_code
+            current_stops = [stop_code]
+
+    # Agregar último segmento
+    if len(current_stops) > 0:
+        segments.append({
+            "bus_route": current_route,
+            "start_stop": start_stop_code,
+            "stops": current_stops
+        })
+
+    # Por construcción, aquí como máximo habrá 2 segmentos (origen y destino)
+    return {"segments": segments}
     ...
 
 def get_route_between_stops_bfs(analyzer, stop1, stop2):

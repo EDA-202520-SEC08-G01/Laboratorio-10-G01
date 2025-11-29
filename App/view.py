@@ -97,51 +97,45 @@ def option_two(cont):
 
 def option_three(cont):
     # TODO: Imprimir los resultados de la opción 3
-    print("\n" + "-" * 80)
-    print("---- OPCIÓN 3 (DFS) ----")
-    
-    # Solicitar parada inicial
+    print("\n----- OPCIÓN 3 (DFS) ----")
+
+    # Pedir paradas (las líneas que ves en la imagen son justamente estos inputs)
     stop1 = input("Parada inicial: ").strip().strip("'\"")
-    
-    # Solicitar parada destino
     stop2 = input("Parada destino: ").strip().strip("'\"")
-    
-    # Validar que se ingresaron ambas paradas
+
+    # Validaciones básicas
     if not stop1 or not stop2:
         print("\nError: Debe ingresar ambas paradas.")
         return
-    
+
     if stop1 == stop2:
         print(f"\nLa parada inicial y destino son la misma ({stop1}).")
         return
-    
+
     print()
-    
+
     # Llamar a la función del logic para obtener la ruta
     result = logic.get_route_between_stops_dfs(cont, stop1, stop2)
-    
+
     # Verificar si se encontró ruta
     if result is None:
         print(f"No se encontró ruta entre '{stop1}' y '{stop2}'")
-        print("-" * 80)
         return
-    
+
     # Imprimir cada segmento de la ruta
     segments = result['segments']
-    
+
     for seg_idx, segment in enumerate(segments):
-        # Si hay transbordo, mostrarlo
-        if segment['is_transfer'] and seg_idx > 0:
-            print(f"--- Cambiar a bus '{segment['bus_route']}' en la parada '{segment['start_stop']}' ---")
-        else:
+        # Mensaje según si es el primer bus o un transbordo
+        if seg_idx == 0:
             print(f"--- Tomar bus '{segment['bus_route']}' desde '{segment['start_stop']}' ---")
-        
-        # Imprimir todas las paradas del segmento en una línea
+        else:
+            print(f"--- Cambiar a bus '{segment['bus_route']}' en la parada '{segment['start_stop']}' ---")
+
+        # Todas las paradas del segmento en una sola línea
         stops_str = " -> ".join(segment['stops'])
         print(stops_str)
         print()
-    
-    print("-" * 80)
     ...
 
 def option_four(cont):
