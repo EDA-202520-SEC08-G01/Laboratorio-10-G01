@@ -186,10 +186,9 @@ def option_five(cont):
         print(f"No se encontró ruta entre '{stop1}' y '{stop2}'")
         return
     total_distance = res["total_distance"]
-    path = res["path"]
-    print(f"Distancia total: {total_distance} km")
+    path = res["elements"]
     print(f"Ruta: (Empieza desde {stop1})")
-    first = res["elements"][0] 
+    first = al.get_element(path, 0)
     first_stop, current_bus = first.split("-")
     for i in range(len(path) - 1):
         if current_bus == first:
