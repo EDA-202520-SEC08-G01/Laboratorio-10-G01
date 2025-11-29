@@ -312,11 +312,9 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
     # TODO: Obtener la ruta entre dos parada usando dfs
     graph = analyzer["connections"]
 
-    # Verificar que existan ambos vértices
     if not G.contains_vertex(graph, stop1) or not G.contains_vertex(graph, stop2):
         return None
 
-    # Helper: separar '66009-100' en ('66009', '100')
     def split_vertex(v):
         parts = v.split('-')
         return parts[0], parts[1]
@@ -324,8 +322,6 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
     _, origin_route = split_vertex(stop1)
     _, dest_route = split_vertex(stop2)
 
-    # -------- DFS con estado "ya hice transbordo o no" --------
-    # Estado: (vertex_id, changed) donde changed = False/True si ya cambié de ruta
     start_state = (stop1, False)
 
     stack_dfs = st.new_stack()
@@ -334,7 +330,7 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
     visited = set()
     visited.add(start_state)
 
-    parent = {}  # parent[(vertex, changed)] = (prev_vertex, prev_changed)
+    parent = {}  
 
     found_state = None
 
@@ -345,7 +341,7 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
             found_state = (current_vertex, changed)
             break
 
-        # Vecinos del vértice actual
+
         neighbors = G.adjacents(graph, current_vertex)
         nsize = al.size(neighbors)
 
@@ -353,19 +349,16 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
             nb = al.get_element(neighbors, i)
             _, nb_route = split_vertex(nb)
 
-            # Lógica de a lo sumo un transbordo:
+
             if not changed:
-                # Todavía estamos en la ruta origen; podemos:
-                # - seguir en la ruta origen
-                # - o cambiar a la ruta destino
                 if nb_route == origin_route:
                     new_changed = False
                 elif nb_route == dest_route:
                     new_changed = True
                 else:
-                    continue  # ignorar otras rutas
+                    continue  
             else:
-                # Ya hicimos transbordo; solo seguimos por la ruta destino
+
                 if nb_route != dest_route:
                     continue
                 new_changed = True
@@ -376,11 +369,9 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
                 parent[new_state] = (current_vertex, changed)
                 st.push(stack_dfs, new_state)
 
-    # Si nunca llegamos al destino con estas restricciones
     if found_state is None:
         return None
 
-    # -------- Reconstruir camino de stop1 a stop2 --------
     path_vertices = []
     state = found_state
     while True:
@@ -390,9 +381,8 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
             break
         state = parent[state]
 
-    path_vertices.reverse()  # ahora va de origen -> destino
+    path_vertices.reverse()  
 
-    # -------- Construir segmentos por bus --------
     segments = []
     current_route = None
     current_stops = []
@@ -402,28 +392,26 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
         stop_code, route = split_vertex(v)
 
         if current_route is None:
-            # Primer vértice
             current_route = route
             start_stop_code = stop_code
             current_stops = [stop_code]
         elif route == current_route:
-            # Seguimos en el mismo bus
+
             if not current_stops or stop_code != current_stops[-1]:
                 current_stops.append(stop_code)
         else:
-            # Cambio de bus -> cerramos segmento anterior
+
             if len(current_stops) > 0:
                 segments.append({
                     "bus_route": current_route,
                     "start_stop": start_stop_code,
                     "stops": current_stops
                 })
-            # Nuevo segmento
+
             current_route = route
             start_stop_code = stop_code
             current_stops = [stop_code]
 
-    # Agregar último segmento
     if len(current_stops) > 0:
         segments.append({
             "bus_route": current_route,
@@ -431,85 +419,69 @@ def get_route_between_stops_dfs(analyzer, stop1, stop2):
             "stops": current_stops
         })
 
-    # Por construcción, aquí como máximo habrá 2 segmentos (origen y destino)
     return {"segments": segments}
     ...
 
 def get_route_between_stops_bfs(analyzer, stop1, stop2):
     
     graph = analyzer["connections"]
-    search = bfs.bfs(graph, stop1)
 
-    if not bfs.has_path_to(search, stop2):
+    if not G.contains_vertex(graph, stop1) or not G.contains_vertex(graph, stop2):
         return None
 
-    path = bfs.path_to(stop2, search)
-    if path is None or st.is_empty(path):
+    visited = bfs.bfs(graph, stop1)
+
+    if not bfs.has_path_to(stop2, visited):
         return None
-    
-    stops_list = al.new_list()
-    temp_stack = st.new_stack()
 
-    while not st.is_empty(path):
-        stop = st.pop(path)
-        al.add_last(stops_list, stop)
-        st.push(temp_stack, stop)
+    path_stack = bfs.path_to(stop2, visited)
 
-    while not st.is_empty(temp_stack):
-        st.push(path, st.pop(temp_stack))
+    path_vertices = []
+    while not st.is_empty(path_stack):
+        v = st.pop(path_stack)
+        path_vertices.append(v)
 
-    segments = al.new_list()
-    total = al.size(stops_list)
+    def split_vertex(v):
+        parts = v.split('-')
+        return parts[0], parts[1]
 
-    if total >= 2:
-        current_segment = {
-            "bus_route": None,
-            "start_stop": al.get_element(stops_list, 0),
-            "stops": al.new_list(),
-            "is_transfer": False
-        }
+    segments = []
+    current_route = None
+    current_stops = []
+    start_stop_code = None
 
-        al.add_last(current_segment["stops"], current_segment["start_stop"])
+    for v in path_vertices:
+        stop_code, route = split_vertex(v)
 
-        for i in range(total - 1):
-            current_stop = al.get_element(stops_list, i)
-            next_stop = al.get_element(stops_list, i + 1)
-            edge = G.get_edge(graph, current_stop, next_stop)
+        if current_route is None:
+            current_route = route
+            start_stop_code = stop_code
+            current_stops = [stop_code]
+        elif route == current_route:
 
-            if edge is not None:
-                route_info = str(edge.get("weight", "Unknown"))
-                
-                if current_segment["bus_route"] is None:
-                    current_segment["bus_route"] = route_info
+            if not current_stops or stop_code != current_stops[-1]:
+                current_stops.append(stop_code)
+        else:
 
-                elif current_segment["bus_route"] != route_info:
-                    current_segment["end_stop"] = current_stop
-                    al.add_last(segments, current_segment)
-                    
-                    current_segment = {
-                        "bus_route": route_info,
-                        "start_stop": current_stop,
-                        "stops": al.new_list(),
-                        "is_transfer": True
-                    }
-                    al.add_last(current_segment["stops"], current_stop)
+            if current_stops:
+                segments.append({
+                    "bus_route": current_route,
+                    "start_stop": start_stop_code,
+                    "stops": current_stops
+                })
 
-            al.add_last(current_segment["stops"], next_stop)
+            current_route = route
+            start_stop_code = stop_code
+            current_stops = [stop_code]
 
-        current_segment["end_stop"] = al.get_element(stops_list, total - 1)
-        al.add_last(segments, current_segment)
+    if current_stops:
+        segments.append({
+            "bus_route": current_route,
+            "start_stop": start_stop_code,
+            "stops": current_stops
+        })
 
-    result = {
-        "search": search,
-        "path": path,
-        "total_stops": al.size(stops_list),
-        "stops_list": stops_list,
-        "segments": segments,
-        "source": stop1,
-        "destination": stop2
-    }
-
-    return result
+    return {"segments": segments}
 def get_shortest_route_between_stops(analyzer, stop1, stop2):
     """
     Obtener la ruta mínima entre dos paradas
