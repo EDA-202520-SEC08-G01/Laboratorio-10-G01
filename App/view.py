@@ -146,6 +146,10 @@ def option_three(cont):
 
 def option_four(cont):
     # TODO: Imprimir los resultados de la opción 4
+    resultado1 = logic.debug_services_at_stop(cont, "22009")
+    resultado2 = logic.debug_neighbors(cont, "22009-193")
+    print(resultado1)
+    print(resultado2)
     ...
 
 def option_five(cont):
