@@ -44,6 +44,7 @@ def add_edge(my_graph, key_u, key_v, weight=1.0):
     
     if vt.get_edge(vertex_u, key_v) is not None and vt.get_edge(vertex_v, key_u) is not None:
         my_graph["num_edges"] -= 1
+
     return my_graph
 
 def vertices(my_graph):

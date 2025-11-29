@@ -219,11 +219,20 @@ def add_route_stop(analyzer, service):
     """
     stop_info = m.get(analyzer['stops'], service['BusStopCode'])
     stop_services = stop_info['services']
-    if lt.is_present(stop_services, service['ServiceNo'], lt.default_function) == -1:
+
+    # Revisar manualmente si el servicio ya está en la lista enlazada
+    found = False
+    node = stop_services['first']
+    while node is not None:
+        if node['info'] == service['ServiceNo']:
+            found = True
+            break
+        node = node['next']
+
+    if not found:
         lt.add_last(stop_services, service['ServiceNo'])
 
     return analyzer
-
 
 def add_connection(analyzer, origin, destination, distance):
     """
@@ -272,7 +281,13 @@ def get_most_concurrent_stops(analyzer):
         al.add_last(stops_with_degree, (key, deg))
 
     def sort_criteria(t1, t2):
-        return t1[1] > t2[1]
+        
+        if t1[1] > t2[1]:
+            return True
+        if t1[1] < t2[1]:
+            return False
+    # empate en conexiones. ordenar por id 
+        return t1[0] < t2[0]
 
     sorted_stops = al.merge_sort(stops_with_degree, sort_criteria)
 
@@ -280,6 +295,12 @@ def get_most_concurrent_stops(analyzer):
     limit = min(5, al.size(sorted_stops))
     for i in range(limit):
         al.add_last(top_5, al.get_element(sorted_stops, i))
+    
+    print("22009-243", G.degree(analyzer["connections"], "22009-243"))
+    print("22009-241", G.degree(analyzer["connections"], "22009-241"))
+    print("22009-193", G.degree(analyzer["connections"], "22009-193"))
+    print("22009-240", G.degree(analyzer["connections"], "22009-240"))
+    print("22009-174", G.degree(analyzer["connections"], "22009-174"))
 
     return top_5
     ...
