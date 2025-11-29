@@ -189,7 +189,7 @@ def option_five(cont):
     path = res["path"]
     print(f"Distancia total: {total_distance} km")
     print(f"Ruta: (Empieza desde {stop1})")
-    first = ruta[0] 
+    first = res["elements"][0] 
     first_stop, current_bus = first.split("-")
     for i in range(len(path) - 1):
         if current_bus == first:
