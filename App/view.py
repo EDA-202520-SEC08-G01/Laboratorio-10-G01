@@ -187,7 +187,7 @@ def option_five(cont):
         return
     path = res["elements"]
     print(f"Ruta: (Empieza desde {stop1})")
-    first = al.get_element(path, 0)
+    first = al.get_element(res, 0)
     first_stop, current_bus = first.split("-")
     for i in range(len(path) - 1):
         if current_bus == first:
