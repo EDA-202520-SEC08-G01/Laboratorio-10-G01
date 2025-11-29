@@ -182,9 +182,26 @@ def option_five(cont):
     stop1 = input("Parada inicial: ").strip().strip("'\"")
     stop2 = input("Parada destino: ").strip().strip("'\"")
     res = logic.get_shortest_route_between_stops(cont, stop1, stop2)
-    return print(res)
+    if res is None:
+        print(f"No se encontró ruta entre '{stop1}' y '{stop2}'")
+        return
+    total_distance = res["total_distance"]
+    path = res["path"]
+    print(f"Distancia total: {total_distance} km")
+    print(f"Ruta: (Empieza desde {stop1})")
+    first = ruta[0] 
+    first_stop, current_bus = first.split("-")
+    for i in range(len(path) - 1):
+        if current_bus == first:
+            print(f"  {path[i]} -> {path[i + 1]}")
+        else:
+            print(f"Cambiar a bus '{current_bus}' en la parada '{path[i]}'")
+            print(f"  {path[i]} -> {path[i + 1]}")
+            first = current_bus
 
-    ...
+
+
+
 
 def option_six(cont):
     # (Opcional) TODO: Imprimir los resultados de la opción 6
