@@ -185,7 +185,6 @@ def option_five(cont):
     if res is None:
         print(f"No se encontró ruta entre '{stop1}' y '{stop2}'")
         return
-    total_distance = res["total_distance"]
     path = res["elements"]
     print(f"Ruta: (Empieza desde {stop1})")
     first = al.get_element(path, 0)
